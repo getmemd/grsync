@@ -11,7 +11,7 @@ import SwiftUI
 struct GR_syncApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            DevicesListView(viewModel: .init())
         }
     }
 }

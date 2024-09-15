@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C54F432D2C959ECB0030CDEC /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = C54F432C2C959ECB0030CDEC /* AlertToast */; };
+		C573B6282C94E746009A1FF5 /* SwiftUIImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = C573B6272C94E746009A1FF5 /* SwiftUIImageViewer */; };
+		C573B6342C94F18F009A1FF5 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = C573B6332C94F18F009A1FF5 /* Kingfisher */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C5F199AC2C948BAE0090CF35 /* GR sync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GR sync.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C54F432D2C959ECB0030CDEC /* AlertToast in Frameworks */,
+				C573B6342C94F18F009A1FF5 /* Kingfisher in Frameworks */,
+				C573B6282C94E746009A1FF5 /* SwiftUIImageViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +74,9 @@
 			);
 			name = "GR sync";
 			packageProductDependencies = (
+				C573B6272C94E746009A1FF5 /* SwiftUIImageViewer */,
+				C573B6332C94F18F009A1FF5 /* Kingfisher */,
+				C54F432C2C959ECB0030CDEC /* AlertToast */,
 			);
 			productName = "GR sync";
 			productReference = C5F199AC2C948BAE0090CF35 /* GR sync.app */;
@@ -94,6 +106,11 @@
 			);
 			mainGroup = C5F199A32C948BAE0090CF35;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C573B6262C94E746009A1FF5 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */,
+				C573B6322C94F18F009A1FF5 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				C54F432B2C959ECB0030CDEC /* XCRemoteSwiftPackageReference "AlertToast" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C5F199AD2C948BAE0090CF35 /* Products */;
 			projectDirPath = "";
@@ -249,12 +266,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "GR sync/Resources/GR sync.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"GR sync/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"GR sync/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 9RSGP9843T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "GR-sync-Info.plist";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "App needs permission to save files on your device";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -278,12 +298,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "GR sync/Resources/GR sync.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"GR sync/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"GR sync/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 9RSGP9843T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "GR-sync-Info.plist";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "App needs permission to save files on your device";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -324,6 +347,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C54F432B2C959ECB0030CDEC /* XCRemoteSwiftPackageReference "AlertToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/elai950/AlertToast";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.9;
+			};
+		};
+		C573B6262C94E746009A1FF5 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/fuzzzlove/swiftui-image-viewer";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		C573B6322C94F18F009A1FF5 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C54F432C2C959ECB0030CDEC /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C54F432B2C959ECB0030CDEC /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
+		};
+		C573B6272C94E746009A1FF5 /* SwiftUIImageViewer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C573B6262C94E746009A1FF5 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */;
+			productName = SwiftUIImageViewer;
+		};
+		C573B6332C94F18F009A1FF5 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C573B6322C94F18F009A1FF5 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C5F199A42C948BAE0090CF35 /* Project object */;
 }
