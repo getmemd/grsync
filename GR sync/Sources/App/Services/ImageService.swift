@@ -8,93 +8,33 @@
 import UIKit
 import Kingfisher
 import Photos
+import Combine
 
-final class ImageService: NSObject {
-    private var imageContinuationKey = 0
-    private var tasks: [DownloadTask?] = []
-
-    // Отменяем все задачи загрузки
-    func cancelAllTasks() {
-        tasks.forEach { $0?.cancel() }
-        tasks.removeAll()
-    }
+final class ImageService: NSObject, ObservableObject {
+    @Published var downloadedCount: Int = 0
+    @Published var totalCount: Int = 0
     
-    // Загружаем и сохраняем изображения (RAW и обычные)
     func downloadAndSaveImages(photos: [Photo]) async throws {
         guard !photos.isEmpty else {
             throw NSError(domain: "ImageDownloadService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No photos available"])
         }
+        totalCount = photos.count
+        downloadedCount = 0
         let urls = photos.compactMap { URL(string: $0.urlString) }
-        if photos.first?.fileType == .dng {
-            try await downloadAndSaveRAWImages(from: urls)
-        } else if photos.first?.fileType == .jpg {
-            try await downloadAndSaveRegularImages(from: urls)
-        }
+        try await downloadAndSaveImages(from: urls)
     }
 
-    // Загрузка и сохранение RAW-изображений
-    private func downloadAndSaveRAWImages(from urls: [URL]) async throws {
+    private func downloadAndSaveImages(from urls: [URL]) async throws {
         for url in urls {
-            let savedUrl = try await downloadRAWFile(from: url)
-            try await saveRAWImageToPhotoLibraryAndDelete(rawFileUrl: savedUrl)
+            let savedUrl = try await downloadFile(from: url)
+            try await saveImageToPhotoLibraryAndDelete(rawFileUrl: savedUrl)
+            downloadedCount += 1
         }
     }
     
-    // Загрузка и сохранение обычных изображений
-    private func downloadAndSaveRegularImages(from urls: [URL]) async throws {
-        var loadedImages: [UIImage] = []
-        for imageUrl in urls {
-            loadedImages.append(try await downloadFile(from: imageUrl))
-        }
-        guard !loadedImages.isEmpty else {
-            throw NSError(domain: "ImageDownloadService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No images were loaded"])
-        }
-        for image in loadedImages {
-            try await savePhoto(image)
-        }
-        tasks.removeAll()
-    }
-    
-    private func downloadFile(from url: URL) async throws -> UIImage {
-        return try await withCheckedThrowingContinuation { continuation in
-            let task = KingfisherManager.shared.retrieveImage(with: url) { result in
-                switch result {
-                case let .success(value):
-                    continuation.resume(returning: value.image)
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }
-            tasks.append(task)
-        }
-    }
-
-    // Асинхронное сохранение фото в фотоальбом
-    private func savePhoto(_ image: UIImage) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
-            objc_setAssociatedObject(image, &imageContinuationKey, continuation, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
-    }
-    
-    // Callback для завершения сохранения изображения
-    @objc
-    private func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
-        if let continuation = objc_getAssociatedObject(image, &imageContinuationKey) as? CheckedContinuation<Void, Error> {
-            objc_setAssociatedObject(image, &imageContinuationKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-            if let error = error {
-                continuation.resume(throwing: error)
-            } else {
-                continuation.resume()
-            }
-        }
-    }
-
-    // Загружаем RAW файл
-    private func downloadRAWFile(from url: URL) async throws -> URL {
+    private func downloadFile(from url: URL) async throws -> URL {
         let (tempUrl, _) = try await URLSession.shared.download(from: url)
         let destinationUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
-        
         do {
             try FileManager.default.moveItem(at: tempUrl, to: destinationUrl)
             return destinationUrl
@@ -103,14 +43,12 @@ final class ImageService: NSObject {
         }
     }
 
-    // Сохраняем RAW файл в фотобиблиотеку и после удаляем
-    private func saveRAWImageToPhotoLibraryAndDelete(rawFileUrl: URL) async throws {
-        try await saveRAWImageToPhotoLibrary(rawFileUrl: rawFileUrl)
+    private func saveImageToPhotoLibraryAndDelete(rawFileUrl: URL) async throws {
+        try await saveImageToPhotoLibrary(rawFileUrl: rawFileUrl)
         try FileManager.default.removeItem(at: rawFileUrl)
     }
 
-    // Сохраняем RAW файл в фотоальбом
-    private func saveRAWImageToPhotoLibrary(rawFileUrl: URL) async throws {
+    private func saveImageToPhotoLibrary(rawFileUrl: URL) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             PHPhotoLibrary.requestAuthorization { status in
                 guard status == .authorized else {

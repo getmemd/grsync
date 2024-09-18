@@ -89,6 +89,9 @@ struct DevicesListView: View {
             .sheet(isPresented: $viewModel.showingConnectionView) {
                 ConnectionViewWrapper(viewModel: viewModel)
             }
+            .onAppear {
+                viewModel.mockPing()
+            }
         }
     }
     

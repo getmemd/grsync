@@ -37,23 +37,6 @@ final class DevicesListViewModel: ObservableObject {
         saveDevices()
     }
     
-    private func saveDevices() {
-        if let encoded = try? JSONEncoder().encode(devices) {
-            UserDefaults.standard.set(encoded, forKey: devicesKey)
-        }
-    }
-    
-    private func loadDevices() {
-        if let savedDevices = UserDefaults.standard.data(forKey: devicesKey),
-           let decodedDevices = try? JSONDecoder().decode([Device].self, from: savedDevices) {
-            devices = decodedDevices.map { device in
-                var modifiedDevice = device
-                modifiedDevice.status = .disconnected
-                return modifiedDevice
-            }
-        }
-    }
-    
     func connectToDevice(_ device: Device) {
         guard let index = devices.firstIndex(where: { $0.id == device.id }) else { return }
         devices[index].status = .connecting
@@ -72,6 +55,29 @@ final class DevicesListViewModel: ObservableObject {
                 errorMessage = error.localizedDescription
                 devices[index].status = .error
                 showingAlert = true
+            }
+        }
+    }
+    
+    func mockPing() {
+        Task {
+            try await photoRepository.ping()
+        }
+    }
+    
+    private func saveDevices() {
+        if let encoded = try? JSONEncoder().encode(devices) {
+            UserDefaults.standard.set(encoded, forKey: devicesKey)
+        }
+    }
+    
+    private func loadDevices() {
+        if let savedDevices = UserDefaults.standard.data(forKey: devicesKey),
+           let decodedDevices = try? JSONDecoder().decode([Device].self, from: savedDevices) {
+            devices = decodedDevices.map { device in
+                var modifiedDevice = device
+                modifiedDevice.status = .disconnected
+                return modifiedDevice
             }
         }
     }

@@ -27,7 +27,6 @@ class PhotoDetailViewModel: NSObject, ObservableObject {
     
     func cancelTasks() {
         task?.cancel()
-        imageService.cancelAllTasks()
     }
     
     func loadPhoto() {

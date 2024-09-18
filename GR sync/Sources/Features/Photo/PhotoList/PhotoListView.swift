@@ -14,6 +14,10 @@ struct PhotoListView: View {
     
     var body: some View {
         Group {
+            if viewModel.isProgress {
+                ProgressView("Downloading \(viewModel.downloadedFiles) of \(viewModel.totalFiles)", value: Double(viewModel.downloadedFiles), total: Double(viewModel.totalFiles))
+                    .padding()
+            }
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
                     ForEach(viewModel.photos) { photo in
@@ -50,9 +54,9 @@ struct PhotoListView: View {
             }
             .navigationTitle(viewModel.isSelectionMode ? "Select Photos" : "Photos")
             .toolbar {
-                if viewModel.isSelectionMode && !viewModel.isLoading {
+                if viewModel.isSelectionMode && (!viewModel.isLoading && !viewModel.isProgress) {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Image(systemName: "square.and.arrow.down.fill")
+                        Image(systemName: "arrow.down.doc")
                             .foregroundColor(.blue)
                             .onTapGesture {
                                 viewModel.showingAlert = true
@@ -76,14 +80,11 @@ struct PhotoListView: View {
                 }
                 Button("No", role: .cancel) { }
             }
+            .blur(radius: viewModel.isLoading ? 10 : 0)
+            .allowsHitTesting(!viewModel.isLoading)
         }
-        .blur(radius: viewModel.isLoading ? 10 : 0)
-        .allowsHitTesting(!viewModel.isLoading)
         .task {
             await viewModel.loadPhotos()
-        }
-        .onDisappear {
-            viewModel.cancelTasks()
         }
         .toast(isPresenting: $viewModel.showingError) {
             AlertToast(displayMode: .alert,

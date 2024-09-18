@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
-import Kingfisher
+import Combine
 
 @MainActor
 class PhotoListViewModel: NSObject, ObservableObject {
     @Published var photos: [Photo] = []
     @Published var isLoading = false
+    @Published var isProgress = false
+    @Published var totalFiles: Int = 0
+    @Published var downloadedFiles: Int = 0
     @Published var errorMessage: String?
     @Published var showingError: Bool = false
     @Published var showingAlert: Bool = false
@@ -20,12 +23,23 @@ class PhotoListViewModel: NSObject, ObservableObject {
     @Published var selectedPhotos: Set<Photo> = []
     @Published var isSelectionMode: Bool = false
     
+    let imageService = ImageService()
     private let fileType: FileType
     private let repository = PhotoRepository.shared
-    private let imageService = ImageService()
+    private var cancellables = Set<AnyCancellable>()
     
     init(fileType: FileType) {
         self.fileType = fileType
+        super.init()
+        imageService.$downloadedCount
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.downloadedFiles, on: self)
+            .store(in: &cancellables)
+        
+        imageService.$totalCount
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.totalFiles, on: self)
+            .store(in: &cancellables)
     }
     
     func loadPhotos() async {
@@ -42,10 +56,10 @@ class PhotoListViewModel: NSObject, ObservableObject {
     }
     
     func saveSelectedPhotos() {
-        isLoading = true
+        isProgress = true
         Task {
             defer {
-                isLoading = false
+                isProgress = false
             }
             do {
                 try await imageService.downloadAndSaveImages(photos: Array(selectedPhotos))
@@ -57,9 +71,5 @@ class PhotoListViewModel: NSObject, ObservableObject {
                 errorMessage = "Error: \(error.localizedDescription)"
             }
         }
-    }
-    
-    func cancelTasks() {
-        imageService.cancelAllTasks()
     }
 }
