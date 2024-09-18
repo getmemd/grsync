@@ -10,7 +10,7 @@ import Kingfisher
 import Photos
 
 final class ImageService: NSObject {
-    private var continuation: CheckedContinuation<Void, any Error>?
+    private var imageContinuationKey = 0
     private var tasks: [DownloadTask?] = []
 
     // Отменяем все задачи загрузки
@@ -72,20 +72,22 @@ final class ImageService: NSObject {
     // Асинхронное сохранение фото в фотоальбом
     private func savePhoto(_ image: UIImage) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            self.continuation = continuation
             UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+            objc_setAssociatedObject(image, &imageContinuationKey, continuation, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
-
+    
     // Callback для завершения сохранения изображения
     @objc
     private func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
-        if let error = error {
-            continuation?.resume(throwing: error)
-        } else {
-            continuation?.resume()
+        if let continuation = objc_getAssociatedObject(image, &imageContinuationKey) as? CheckedContinuation<Void, Error> {
+            objc_setAssociatedObject(image, &imageContinuationKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            if let error = error {
+                continuation.resume(throwing: error)
+            } else {
+                continuation.resume()
+            }
         }
-        continuation = nil
     }
 
     // Загружаем RAW файл
