@@ -43,18 +43,18 @@ class PhotoListViewModel: NSObject, ObservableObject {
     
     func saveSelectedPhotos() {
         isLoading = true
-        imageService.downloadAndSaveImages(photos: Array(selectedPhotos)) { [weak self] result in
-            DispatchQueue.main.async{
-                self?.isLoading = false
-                switch result {
-                case .success:
-                    self?.showingSuccess = true
-                    self?.selectedPhotos.removeAll()
-                    self?.isSelectionMode = false
-                case let .failure(error):
-                    self?.showingError = true
-                    self?.errorMessage = "Error: \(error.localizedDescription)"
-                }
+        Task {
+            defer {
+                isLoading = false
+            }
+            do {
+                try await imageService.downloadAndSaveImages(photos: Array(selectedPhotos))
+                showingSuccess = true
+                selectedPhotos.removeAll()
+                isSelectionMode = false
+            } catch {
+                showingError = true
+                errorMessage = "Error: \(error.localizedDescription)"
             }
         }
     }

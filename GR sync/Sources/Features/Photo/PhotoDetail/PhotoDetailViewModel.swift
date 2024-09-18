@@ -49,17 +49,16 @@ class PhotoDetailViewModel: NSObject, ObservableObject {
     
     func saveImage() {
         isLoading = true
-        imageService.downloadAndSaveImages(photos: [photo]) { [weak self] result in
-            DispatchQueue.main.async{
-                self?.isLoading = false
-                switch result {
-                case .success:
-                    self?.showingSuccess = true
-                case let .failure(error):
-                    self?.showingError = true
-                    self?.errorMessage = "Error: \(error.localizedDescription)"
-                    print(error.localizedDescription)
-                }
+        Task {
+            defer {
+                isLoading = false
+            }
+            do {
+                try await imageService.downloadAndSaveImages(photos: [photo])
+                showingSuccess = true
+            } catch {
+                showingError = true
+                errorMessage = "Error: \(error.localizedDescription)"
             }
         }
     }
