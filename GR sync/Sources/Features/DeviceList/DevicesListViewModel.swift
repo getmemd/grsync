@@ -8,12 +8,16 @@
 import Foundation
 import Combine
 import NetworkExtension
+import SwiftUI
 
-class DevicesListViewModel: ObservableObject {
+@MainActor
+final class DevicesListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showingAlert = false
     @Published var showingConnectionView = false
+    @Published var isPresented = true
     @Published var devices: [Device] = []
+    @Published var navigationPath = NavigationPath()
 
     private let devicesKey = "savedDevices"
     private let photoRepository: PhotoRepository = .shared
@@ -53,15 +57,18 @@ class DevicesListViewModel: ObservableObject {
     func connectToDevice(_ device: Device) {
         guard let index = devices.firstIndex(where: { $0.id == device.id }) else { return }
         devices[index].status = .connecting
-        let hotspotConfiguration = NEHotspotConfiguration(ssid: device.ssid, passphrase: "password123", isWEP: false)
+        let hotspotConfiguration = NEHotspotConfiguration(ssid: device.ssid, passphrase: device.password, isWEP: false)
         hotspotConfiguration.joinOnce = true
         let hotspotManager = NEHotspotConfigurationManager.shared
         Task {
             do {
                 try await hotspotManager.apply(hotspotConfiguration)
-                try await photoRepository.ping()
                 devices[index].status = .connected
             } catch {
+                guard (error as NSError).code != NEHotspotConfigurationError.alreadyAssociated.rawValue else {
+                    devices[index].status = .connected
+                    return
+                }
                 errorMessage = error.localizedDescription
                 devices[index].status = .error
                 showingAlert = true

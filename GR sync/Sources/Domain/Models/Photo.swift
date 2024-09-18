@@ -12,7 +12,7 @@ enum FileType: String {
     case dng = ".DNG"
 }
 
-struct Photo: Identifiable {
+struct Photo: Identifiable, Hashable {
     let id = UUID()
     let directory: String
     let fileName: String

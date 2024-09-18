@@ -26,22 +26,24 @@ struct PhotoDetailView: View {
             viewModel.loadPhoto()
         }
         .onDisappear {
-            viewModel.cancelTask()
+            viewModel.cancelTasks()
         }
         .navigationTitle(viewModel.photo.fileName)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "square.and.arrow.down.fill")
-                    .foregroundColor(.blue)
-                    .onTapGesture {
-                        viewModel.showingAlert = true
-                    }
-                    .alert("Save on device?", isPresented: $viewModel.showingAlert) {
-                        Button("Yes") {
-                            viewModel.writeToPhotoAlbum()
+            if !viewModel.isLoading {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image(systemName: "square.and.arrow.down.fill")
+                        .foregroundColor(.blue)
+                        .onTapGesture {
+                            viewModel.showingAlert = true
                         }
-                        Button("No", role: .cancel) { }
-                    }
+                        .alert("Save on device?", isPresented: $viewModel.showingAlert) {
+                            Button("Yes") {
+                                viewModel.saveImage()
+                            }
+                            Button("No", role: .cancel) { }
+                        }
+                }
             }
         }
         .allowsHitTesting(!viewModel.isLoading)

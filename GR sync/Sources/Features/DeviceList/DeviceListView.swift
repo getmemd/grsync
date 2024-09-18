@@ -10,7 +10,7 @@ import AlertToast
 
 struct DevicesListView: View {
     @StateObject var viewModel = DevicesListViewModel()
-
+    
     var body: some View {
         NavigationView {
             Group {
@@ -34,9 +34,7 @@ struct DevicesListView: View {
                     List {
                         ForEach(viewModel.devices) { device in
                             HStack {
-                                Button(action: {
-                                    viewModel.connectToDevice(device)
-                                }) {
+                                NavigationLink(destination: OptionsListView()) {
                                     HStack {
                                         Image(systemName: "wifi")
                                             .foregroundColor(wifiIconColor(for: device.status))
@@ -50,6 +48,13 @@ struct DevicesListView: View {
                                                 .foregroundColor(.white.opacity(0.7))
                                         }
                                         Spacer()
+                                        Text("Connect")
+                                            .padding()
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .onTapGesture {
+                                                viewModel.connectToDevice(device)
+                                            }
                                         if device.status == .connecting {
                                             ProgressView()
                                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -63,7 +68,6 @@ struct DevicesListView: View {
                                     .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
                                 }
                                 .animation(.easeInOut(duration: 0.3), value: device.status)
-
                             }
                             .listRowSeparator(.hidden)
                         }
@@ -87,7 +91,7 @@ struct DevicesListView: View {
             }
         }
     }
-
+    
     func wifiIconColor(for status: DeviceConnectionStatus) -> Color {
         switch status {
         case .connecting:

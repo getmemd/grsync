@@ -19,13 +19,15 @@ class PhotoDetailViewModel: NSObject, ObservableObject {
     
     let photo: Photo
     private var task: DownloadTask?
+    private let imageService = ImageService()
     
     init(photo: Photo) {
         self.photo = photo
     }
     
-    func cancelTask() {
+    func cancelTasks() {
         task?.cancel()
+        imageService.cancelAllTasks()
     }
     
     func loadPhoto() {
@@ -45,15 +47,20 @@ class PhotoDetailViewModel: NSObject, ObservableObject {
         }
     }
     
-    func writeToPhotoAlbum() {
-        guard let image else { return }
+    func saveImage() {
         isLoading = true
-        UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveCompleted), nil)
-    }
-    
-    @objc
-    private func saveCompleted(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
-        isLoading = false
-        showingSuccess = true
+        imageService.downloadAndSaveImages(photos: [photo]) { [weak self] result in
+            DispatchQueue.main.async{
+                self?.isLoading = false
+                switch result {
+                case .success:
+                    self?.showingSuccess = true
+                case let .failure(error):
+                    self?.showingError = true
+                    self?.errorMessage = "Error: \(error.localizedDescription)"
+                    print(error.localizedDescription)
+                }
+            }
+        }
     }
 }
